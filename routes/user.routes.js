@@ -2,10 +2,11 @@
 const express = require('express')
 const bcrypt = require('bcryptjs')
 const JWT = require('jsonwebtoken')
+const passport = require('passport')
 
 // Import UserModel
 const UserModel = require('../models/User')
-require('dotenv/config');
+const key = require('../config/keys');
 
 // Variable
 const router = express.Router()
@@ -81,7 +82,7 @@ router.route('/login').post(async (req, res) => {
                             name: user.name,
                         }
 
-                        const token = JWT.sign(payload, process.env.SecretOrKey)
+                        const token = JWT.sign(payload, key.secretOrKey)
 
                         res.json({
                             token: 'Bearer ' + token
@@ -95,6 +96,19 @@ router.route('/login').post(async (req, res) => {
                 })
         })
 })
+
+
+// @route       POST('/user/api/current')
+// @desc        Return Current User
+// @access      Private
+router.route('/current').get(
+    passport.authenticate('jwt', { session: false }),
+    (req, res) => {
+        res.json({
+            id: req.user._id,
+            name: req.user.name
+        })
+    })
 
 
 // @route       GET('/user/api/viewUsers')
